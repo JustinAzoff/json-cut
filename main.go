@@ -13,6 +13,7 @@ func cut(r io.Reader, w io.Writer, fields []string) error {
 	var i int
 	numFields := len(fields)
 	br := bufio.NewReader(r)
+	nothing := []byte("")
 
 	paths := [][]string{}
 	for _, f := range fields {
@@ -33,9 +34,11 @@ func cut(r io.Reader, w io.Writer, fields []string) error {
 		}, paths...)
 		for i = 0; i < numFields-1; i++ {
 			w.Write(out[i])
+			out[i] = nothing
 			w.Write([]byte("\t"))
 		}
 		w.Write(out[numFields-1])
+		out[numFields-1] = nothing
 		w.Write([]byte("\n"))
 	}
 	return nil
