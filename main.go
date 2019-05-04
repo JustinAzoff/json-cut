@@ -26,18 +26,35 @@ func extractKey(line string) (string, string) {
 	panic("wtf")
 }
 func skipToValue(line string) string {
-	for line[0] == ':' || line[0] == ' ' {
-		line = line[1:]
+	previous := '_'
+	inString := false
+	for idx, ch := range line {
+		if ch == '"' && previous != '\\' {
+			inString = !inString
+		}
+		if ch == ':' && !inString {
+			line = line[idx+1:]
+			break
+		}
+		previous = ch
 	}
-	return line
+	for idx, ch := range line {
+		if ch == ' ' {
+			line = line[idx+1:]
+		} else {
+			return line
+		}
+	}
+	panic("wtf")
 }
 
 //Capture until the next comma or } that is not in a string
 func captureValue(line string) (string, string) {
 	inString := false
 	sawString := false
+	previous := '_'
 	for idx, ch := range line {
-		if ch == '"' {
+		if ch == '"' && previous != '\\' {
 			inString = !inString
 			sawString = true
 		}
@@ -48,6 +65,7 @@ func captureValue(line string) (string, string) {
 				return line[1 : idx-1], line[idx+1:]
 			}
 		}
+		previous = ch
 	}
 	panic("wtf")
 }
@@ -67,8 +85,9 @@ func (e *extractor) Extract(line string, w io.Writer) error {
 	nextOutindex := 0
 
 	capture := false
+	remaining := e.numFields
 
-	for len(line) > 0 {
+	for len(line) > 0 && remaining > 0 {
 		ch := line[0]
 		if ch == '{' {
 			depth++
@@ -77,7 +96,7 @@ func (e *extractor) Extract(line string, w io.Writer) error {
 		if ch == '}' {
 			line = line[1:]
 		}
-		if ch == ' ' || ch == '\n' {
+		if ch == ' ' || ch == '\n' || ch == ',' || ch == '[' || ch == ']' {
 			line = line[1:]
 		}
 		if ch == '"' {
@@ -89,6 +108,7 @@ func (e *extractor) Extract(line string, w io.Writer) error {
 				value, line = captureValue(line)
 				log.Printf("Got value %q", value)
 				e.outBuffer[nextOutindex] = value
+				remaining--
 			} else {
 				log.Printf("Don't want this key")
 				_, line = captureValue(line)
