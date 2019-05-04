@@ -101,20 +101,20 @@ func (e *extractor) Extract(line string, w io.Writer) error {
 		}
 		if ch == '"' {
 			key, line = extractKey(line[1:])
-			log.Printf("Key was: %q", key)
+			//log.Printf("Key was: %q", key)
 			line = skipToValue(line)
 			if nextOutindex, wantkey = e.fm[key]; wantkey {
-				log.Printf("Want this key for %d", nextOutindex)
+				//log.Printf("Want this key for %d", nextOutindex)
 				value, line = captureValue(line)
-				log.Printf("Got value %q", value)
+				//log.Printf("Got value %q", value)
 				e.outBuffer[nextOutindex] = value
 				remaining--
 			} else {
-				log.Printf("Don't want this key")
+				//log.Printf("Don't want this key")
 				_, line = captureValue(line)
 			}
 		}
-		log.Printf("line is %s", line)
+		//log.Printf("line is %s", line)
 		_ = capture
 	}
 	for i := 0; i < e.numFields; i++ {
