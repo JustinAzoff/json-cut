@@ -24,7 +24,7 @@ func cut(r io.Reader, w io.Writer, fields []string) error {
 
 	out := make([][]byte, numFields)
 	for {
-		line, err := br.ReadBytes('\n')
+		line, err := br.ReadSlice('\n')
 		if err == io.EOF {
 			break
 		}
