@@ -13,6 +13,8 @@ func cut(r io.Reader, w io.Writer, fields []string) error {
 	var i int
 	numFields := len(fields)
 	br := bufio.NewReader(r)
+	bw := bufio.NewWriter(w)
+	defer bw.Flush()
 	nothing := []byte("")
 
 	paths := [][]string{}
@@ -24,7 +26,7 @@ func cut(r io.Reader, w io.Writer, fields []string) error {
 	for {
 		line, err := br.ReadBytes('\n')
 		if err == io.EOF {
-			return nil
+			break
 		}
 		if err != nil {
 			return err
@@ -33,13 +35,13 @@ func cut(r io.Reader, w io.Writer, fields []string) error {
 			out[idx] = value
 		}, paths...)
 		for i = 0; i < numFields-1; i++ {
-			w.Write(out[i])
+			bw.Write(out[i])
 			out[i] = nothing
-			w.Write([]byte("\t"))
+			bw.Write([]byte("\t"))
 		}
-		w.Write(out[numFields-1])
+		bw.Write(out[numFields-1])
 		out[numFields-1] = nothing
-		w.Write([]byte("\n"))
+		bw.Write([]byte("\n"))
 	}
 	return nil
 }
