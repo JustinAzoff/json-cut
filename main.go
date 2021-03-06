@@ -12,7 +12,7 @@ import (
 func cut(r io.Reader, w io.Writer, fields []string) error {
 	var i int
 	numFields := len(fields)
-	br := bufio.NewReader(r)
+	br := bufio.NewReaderSize(r, 16*1024*1024)
 	bw := bufio.NewWriter(w)
 	defer bw.Flush()
 	nothing := []byte("")
